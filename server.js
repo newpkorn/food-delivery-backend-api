@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import env from 'dotenv';
+import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import foodRoute from './routes/foodRoute.js';
 import userRouter from './routes/userRoute.js';
@@ -9,9 +9,9 @@ import orderRouter from './routes/orderRoute.js';
 
 
 // app config
-env.config();
+dotenv.config();
 const app = express();
-const port = process.env.VITE_PORT || 3000;
+const PORT = process.env.PORT || 5181;
 
 // middlewares
 app.use(express.json());
@@ -28,6 +28,6 @@ app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
 
 // listen
-app.listen(port, () => {
-  console.log(`Server is running on port: ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on port: ${PORT}`);
 });

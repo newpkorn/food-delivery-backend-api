@@ -2,14 +2,14 @@ import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.VITE_STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 
 // placing user order for frontend
 const placeOrder = async (req, res) => {
 
   const { userId, items, amount, address } = req.body;
-  const frontend_url = process.env.VITE_FRONTEND_URL;
+  const frontend_url = process.env.FRONTEND_URL;
 
   try {
       const newOrder = new orderModel({

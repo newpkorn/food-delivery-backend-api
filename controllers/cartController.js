@@ -1,51 +1,15 @@
 import userModel from '../models/userModel.js';
 
-// // add items to user cart
-// const addToCart = async (req, res) => {
-//   const { userId, itemId } = req.body;
-//   try {
-//     let userData = await userModel.findById(userId);
-//     let cartData = await userData.cartData;
-//     if (!cartData[itemId]) {
-//       cartData[itemId] = 1;
-//     } else {
-//       cartData[itemId] += 1;
-//     }
-//     await userModel.findByIdAndUpdate(userId, {cartData});
-//     return res.status(200).json({ success: true, message: "Item added to cart" });
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).json({ success: false, message: error.message });
-//   }
-// }
-
-// // remove items to user cart
-// const removeFromCart = async (req, res) => {
-//   const { userId, itemId } = req.body;
-//   try {
-//     let userData = await userModel.findById(userId);
-//     let cartData = await userData.cartData;
-//     if (cartData[itemId] > 0) {
-//       cartData[itemId] -= 1;
-//     }
-//     await userModel.findByIdAndUpdate(userId, {cartData});
-//     return res.status(200).json({ success: true, message: "Item removed from cart" });
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).json({ success: false, message: error.message });
-//   }
-// }
-
 // add items to user cart
 const addToCart = async (req, res) => {
   const { userId, itemId } = req.body;
   try {
     let userData = await userModel.findById(userId);
-    let cartData = userData.cartData || {}; // กำหนด cartData ให้เป็นว่างถ้าหากไม่มีข้อมูล
+    let cartData = userData.cartData || {};
     if (!cartData[itemId]) {
-      cartData[itemId] = 1; // ถ้าไม่มีสินค้าในตะกร้า ให้เพิ่มเข้าไป 1
+      cartData[itemId] = 1;
     } else {
-      cartData[itemId] += 1; // ถ้ามีสินค้าแล้ว ให้เพิ่มจำนวน
+      cartData[itemId] += 1;
     }
     await userModel.findByIdAndUpdate(userId, { cartData });
     return res.status(200).json({ success: true, message: "Item added to cart" });
@@ -60,11 +24,11 @@ const removeFromCart = async (req, res) => {
   const { userId, itemId } = req.body;
   try {
     let userData = await userModel.findById(userId);
-    let cartData = userData.cartData || {}; // กำหนด cartData ให้เป็นว่างถ้าหากไม่มีข้อมูล
+    let cartData = userData.cartData || {};
     if (cartData[itemId] > 0) {
-      cartData[itemId] -= 1; // ลดจำนวนสินค้าในตะกร้า
+      cartData[itemId] -= 1;
     }
-    // หากจำนวนสินค้าเป็น 0 ให้ลบสินค้าออกจากตะกร้า
+   
     if (cartData[itemId] === 0) {
       delete cartData[itemId];
     }
