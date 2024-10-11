@@ -41,6 +41,7 @@ const removeFoodItem = async (req, res) => {
       return res.status(404).json({ success: false, message: "Food item not found" });
     }
     
+    // const imagePath = `/var/www/myapp/uploads/${food.image}`;
     const imagePath = `uploads/${food.image}`;
     fs.unlink(imagePath, (err) => {
       if (err) {

@@ -3,13 +3,22 @@ version: "3.9"
 services:
   api:
     build: .
-    image: newpakorn/tomato-food-delivery-api:v1.0
+    image: newpakorn/tomato-food-delivery-api:v1.4
+    container_name: tomato-api
     env_file:
       - .env
     ports:
       - '5180:5180'
     networks:
       - mynetwork
+    volumes:
+      - /var/www/myapp/uploads:/app/uploads
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'  # 0.5 CPU
+          memory: 512M  # 512 MB RAM
 
 networks:
   mynetwork:

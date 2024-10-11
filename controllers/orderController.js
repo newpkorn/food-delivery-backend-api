@@ -60,10 +60,29 @@ const placeOrder = async (req, res) => {
 }
 
 
+// const verifyOrder = async (req, res) => {
+//   const { success, orderId } = req.body;
+//   try {
+//     if (success == 'true') {
+//       await orderModel.findByIdAndUpdate(orderId, { payment: true });
+//       res.status(200).json({ success: true, message: 'Payment verified' });
+//     } else {
+//       await orderModel.findByIdAndDelete(orderId);
+//       res.status(400).json({ success: false, message: 'Payment failed' });
+//     }
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ success: false, message: 'Internal Server Error' });
+//   }
+// };
+
+// user orders for frontend
+
 const verifyOrder = async (req, res) => {
   const { success, orderId } = req.body;
+  console.log("Received:", { success, orderId }); // เพิ่มการ log เพื่อตรวจสอบค่าที่รับ
   try {
-    if (success == 'true') {
+    if (success === 'true') { // ตรวจสอบว่าเป็น string 'true'
       await orderModel.findByIdAndUpdate(orderId, { payment: true });
       res.status(200).json({ success: true, message: 'Payment verified' });
     } else {
@@ -76,7 +95,6 @@ const verifyOrder = async (req, res) => {
   }
 };
 
-// user orders for frontend
 const userOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({ userId: req.body.userId });

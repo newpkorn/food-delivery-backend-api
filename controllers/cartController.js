@@ -19,6 +19,29 @@ const addToCart = async (req, res) => {
   }
 }
 
+
+// add items to user cart
+// const addToCart = async (req, res) => {
+//   const { userId, itemId } = req.body;
+//   try {
+//     let userData = await userModel.findById(userId);
+//     let cartData = userData.cartData || {};
+    
+//     // ตรวจสอบว่า itemId มีอยู่ใน cartData หรือไม่
+//     if (!cartData[itemId]) {
+//       cartData[itemId] = { quantity: 1 }; // เปลี่ยนให้เป็นอ็อบเจ็กต์ที่มี quantity
+//     } else {
+//       cartData[itemId].quantity += 1; // เพิ่ม quantity
+//     }
+
+//     await userModel.findByIdAndUpdate(userId, { cartData });
+//     return res.status(200).json({ success: true, message: "Item added to cart" });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({ success: false, message: error.message });
+//   }
+// }
+
 // remove items from user cart
 const removeFromCart = async (req, res) => {
   const { userId, itemId } = req.body;
@@ -28,7 +51,6 @@ const removeFromCart = async (req, res) => {
     if (cartData[itemId] > 0) {
       cartData[itemId] -= 1;
     }
-   
     if (cartData[itemId] === 0) {
       delete cartData[itemId];
     }
