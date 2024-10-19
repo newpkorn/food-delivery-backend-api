@@ -11,6 +11,8 @@ const authMiddleware = async (req, res, next) => {
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
+      // If the token is expired, clear the token from the client's cookies
+      res.clearCookie('token');
       return res.status(401).json({ success: false, message: 'Token expired' });
     }
     return res.status(401).json({ success: false, message: 'Token is not valid' });
@@ -18,4 +20,3 @@ const authMiddleware = async (req, res, next) => {
 };
 
 export default authMiddleware;
-

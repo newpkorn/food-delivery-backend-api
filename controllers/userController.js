@@ -25,7 +25,7 @@ const loginUser = async (req, res) => {
 };
 
 const createToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
 };
 
 // register user
@@ -85,7 +85,7 @@ const updateUserInfo = async (req, res) => {
     // checking password before updating the user info.
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      // ถ้ารหัสผ่านไม่ถูกต้อง ให้ลบรูปภาพที่อัพโหลดใหม่ออก (ถ้ามี)
+      // if incorrect password and new image is uploaded, delete the new image
       if (image_filename) {
         await fs.unlink(`uploads/users/${id}/${image_filename}`, (err) => {
           if (err) {
