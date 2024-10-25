@@ -7,11 +7,22 @@ import userRouter from './routes/userRoute.js';
 import cartRouter from './routes/cartRoute.js';
 import orderRouter from './routes/orderRoute.js';
 
-
 // app config
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5181;
+
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  socket.on('new-order', (order) => {
+    io.emit('new-order', order);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
 
 // middlewares
 app.use(express.json());
@@ -32,8 +43,7 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-
 // listen
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`);
 });

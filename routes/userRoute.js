@@ -26,7 +26,9 @@ const upload = multer({ storage: storage });
 
 userRouter.post('/register', registerUser);
 userRouter.post('/login', loginUser);
+
 userRouter.get('/me', authMiddleware, getMe);
+
 userRouter.patch('/update/:id', authMiddleware, upload.single('image'), updateUserInfo);
 
 export default userRouter;
