@@ -17,8 +17,14 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'  # 0.5 CPU
-          memory: 512M  # 512 MB RAM
+          cpus: '0.5'
+          memory: 512M
+    labels:
+    - "com.docker.logging.driver=loki"
+    - "com.docker.logging.loki.url=http://loki:3100/loki/api/v1/push"
+    - "com.docker.logging.loki-retries=5"
+    - "com.docker.logging.loki-batch-size=400"
+    - "container_name=tomato-api"
 
 networks:
   mynetwork:

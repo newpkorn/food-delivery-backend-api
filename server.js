@@ -12,18 +12,6 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5181;
 
-io.on('connection', (socket) => {
-  console.log('A user connected');
-
-  socket.on('new-order', (order) => {
-    io.emit('new-order', order);
-  });
-
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
-  });
-});
-
 // middlewares
 app.use(express.json());
 app.use(cors());
@@ -44,6 +32,6 @@ app.use((err, req, res, next) => {
 });
 
 // listen
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`);
 });
