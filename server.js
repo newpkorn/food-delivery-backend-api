@@ -17,15 +17,36 @@ const server = http.createServer(app);
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+    origin: [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL],
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+    credentials: true
   }
 });
 
-
 // middlewares
 app.use(express.json());
-app.use(cors());
+app.use((req, res, next) => {
+  const allowedOrigins = [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PATCH, PUT, DELETE");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  next();
+});
+
+app.options('*', (req, res) => {
+  const allowedOrigins = [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PATCH, PUT, DELETE");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  res.sendStatus(200);
+});
+
 
 // db connection
 connectDB();
