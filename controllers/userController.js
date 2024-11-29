@@ -3,7 +3,11 @@ import validator from "validator";
 import bcrypt from "bcrypt";
 import userModel from "../models/userModel.js";
 import fs from "fs";
+import { extractPublicId, extractPublicIdNumber } from "../utils/cloudinaryUtils.js";
+import { deleteImage, deleteOriginalFileName, uploadImage } from "../config/cloudinary.js";
 
+
+const userUploadFolder = 'user_images';
 
 // login user
 const loginUser = async (req, res) => {
@@ -70,95 +74,113 @@ const getMe = async (req, res) => {
 };
 
 // update user info
+
 const updateUserInfo = async (req, res) => {
   const { id } = req.params;
-  let image_filename = req.file ? req.file.filename : null;
   const { name, email, address, phoneNumber, password, newPassword, confirmPassword } = req.body;
+  let image_filename;
+
+  if (req.file) {
+    image_filename = req.file.filename;
+  }
 
   try {
     const user = await userModel.findById(id);
-
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
     // checking password before updating the user info.
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      // if incorrect password and new image is uploaded, delete the new image
-      if (image_filename) {
-        await fs.unlink(`uploads/users/${id}/${image_filename}`, (err) => {
-          if (err) {
-            console.error("Error deleting new image:", err);
-          } else {
-            console.log("New image deleted due to invalid password: ", image_filename);
-          }
-        });
-      }
-      return res.status(401).json({ success: false, message: "Invalid password" });
-    }
 
-    // Update user information if password is valid
-    if (name) {
-      user.name = name;
-    }
+    // if incorrect password and new image is uploaded, delete the new image  
+    if (!isPasswordValid) {
+      if (image_filename) {
+        try {
+          const originalFileName = image_filename;
+
+          const deleteResult = await deleteImage(originalFileName, userUploadFolder);
+
+          if (!deleteResult || deleteResult?.deleted_counts?.[originalFileName]?.original === 0) {
+            console.error(`Failed to delete image in cloud: ${originalFileName}`);
+          }
+
+          const deleteOriginalFileNameResult = await deleteOriginalFileName(originalFileName.split('/').pop());
+          
+          if (!deleteOriginalFileNameResult || deleteOriginalFileNameResult?.deleted_counts?.[`food_delivery/${originalFileName}`]?.original === 0) {
+            console.error(`Failed to delete original file image: ${originalFileName}`);
+          }
+        } catch (err) {
+          console.error("Error deleting image in cloud:", err);
+        }
+      }
+    
+      return res.status(401).json({ success: false, message: "Invalid password" });
+    } 
+
+    if (name) user.name = name;
     if (email) {
       if (!validator.isEmail(email)) {
         return res.status(400).json({ success: false, message: "Invalid email" });
       }
-      const emailExists = await userModel.exists({ email: email, _id: { $ne: user._id } });
+      const emailExists = await userModel.exists({ email, _id: { $ne: user._id } });
       if (emailExists) {
-        console.log("Email already exists");
         return res.status(400).json({ success: false, message: "Email already exists" });
       }
       user.email = email;
     }
-    if (address) {
-      user.address = address;
-    }
+    if (address) user.address = address;
     if (phoneNumber) {
-      if (!validator.isMobilePhone(phoneNumber, 'any')) {
+      if (!validator.isMobilePhone(phoneNumber, "any")) {
         return res.status(400).json({ success: false, message: "Invalid phone number" });
       }
       user.phoneNumber = phoneNumber;
     }
 
-    // verifying new password and confirm password
-    if (newPassword && confirmPassword) {
-      if (!validator.isLength(newPassword, { min: 8 })) {
-        return res.status(400).json({ success: false, message: "New password must be at least 8 characters long" });
-      }
+    if (newPassword || confirmPassword) {
       if (newPassword !== confirmPassword) {
         return res.status(400).json({ success: false, message: "New passwords do not match" });
       }
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      user.password = hashedPassword; // update the password
+      if (!validator.isLength(newPassword, { min: 8 })) {
+        return res.status(400).json({ success: false, message: "New password must be at least 8 characters long" });
+      }
+      user.password = await bcrypt.hash(newPassword, 10);
     }
 
-    // Update image if a new one is uploaded
     if (image_filename) {
       const currentImage = user.image;
-      user.image = image_filename;
+      const currentImgId = extractPublicIdNumber(currentImage);
 
-      // Delete the old image if it exists
-      if (currentImage) {
-        await fs.unlink(`uploads/users/${id}/${currentImage}`, (err) => {
-          if (err) {
-            console.error("Error deleting old image:", err);
-          } else {
-            console.log("Old image deleted successfully: ", currentImage);
-          }
-        });
+      if (currentImgId) {
+        const deleteImageResult = await deleteImage(currentImgId, userUploadFolder);
+
+        if (!deleteImageResult || deleteImageResult?.deleted_counts?.[extractPublicId(currentImage) + '']?.original === 0) {
+          console.error(`Failed to delete image: ${currentImgId}`);
+        }
+      }
+
+      const uploadResult = await uploadImage(
+        req.file.path,
+        userUploadFolder,
+        user.name ? `${user.name.replace(/\s+/g, "")}-${Date.now()}` : `${Date.now()}`
+      );
+      user.image = uploadResult.secure_url;
+
+      if (uploadResult.original_filename) {
+        const deleteOriginalFileNameResult = await deleteOriginalFileName(uploadResult.original_filename);
+        if (!deleteOriginalFileNameResult || deleteOriginalFileNameResult?.deleted_counts?.[`food_delivery/${uploadResult.original_filename}`]?.original === 0) {
+          console.error(`Failed to delete original file image: ${uploadResult.original_filename}`);
+        }
       }
     }
-
     await user.save();
-    return res.status(200).json({ success: true, message: 'User information updated successfully', data: user });
+    return res.status(200).json({ success: true, message: "User information updated successfully", data: user });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("Error updating user info:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
 
 
 export { loginUser, registerUser, getMe, updateUserInfo };

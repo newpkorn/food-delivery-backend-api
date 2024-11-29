@@ -1,8 +1,8 @@
 import { uploadImage, deleteOriginalFileName, deleteImage } from "../config/cloudinary.js";
 import foodModel from "../models/foodModel.js";
-import { extractFolderPath, extractPublicId, extractPublicIdNumber } from "../utils/cloudinaryUtils.js";
+import { extractPublicId, extractPublicIdNumber } from "../utils/cloudinaryUtils.js";
 
-const foodFolder = 'food_images';
+const foodUploadFolder = 'food_images';
 // add food item
 const addFoodItem = async (req, res) => {
 
@@ -10,7 +10,7 @@ const addFoodItem = async (req, res) => {
     let imageUrl;
 
     if (req.file) {
-      const uploadResult = await uploadImage(req.file.path, foodFolder);
+      const uploadResult = await uploadImage(req.file.path, foodUploadFolder);
       imageUrl = uploadResult.secure_url;
 
       if (uploadResult.original_filename) {
@@ -65,12 +65,12 @@ const updateFoodItem = async (req, res) => {
 
     if (req.file && req.file.path) {
       const currentImage = FoodItem.image;
-      // const publicId = currentImage.split('/').pop().split('.')[0];
+
       const currentImgId = extractPublicIdNumber(currentImage);
 
       // Delete old image if it exists
       if (currentImgId) {
-        const deleteOldImageResult = await deleteImage(currentImgId, foodFolder);
+        const deleteOldImageResult = await deleteImage(currentImgId, foodUploadFolder);
 
         const currentImgPath = extractPublicId(currentImage);
 
@@ -82,7 +82,7 @@ const updateFoodItem = async (req, res) => {
       }
 
       // Upload new image
-      const uploadResult = await uploadImage(req.file.path, foodFolder);
+      const uploadResult = await uploadImage(req.file.path, foodUploadFolder);
       updatedFields.image = uploadResult.secure_url;
       console.log('New image URL uploaded:', uploadResult.secure_url);
 
@@ -128,7 +128,7 @@ const removeFoodItem = async (req, res) => {
       console.log('current image ID: ', currentImgId);
 
       if (currentImgId) {
-        const deleteImageResult = await deleteImage(currentImgId, foodFolder);
+        const deleteImageResult = await deleteImage(currentImgId, foodUploadFolder);
         console.log('deleteImageResult: ', deleteImageResult);
 
         const currentImgPath = extractPublicId(foodImage);

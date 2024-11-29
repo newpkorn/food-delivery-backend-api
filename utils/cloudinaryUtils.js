@@ -10,8 +10,8 @@
  * to "1732849149521"
 **/
 export const extractPublicIdNumber = (url) => {
-  // Regular expression to match the public ID number part of the Cloudinary URL
-  const regex = /\/(\d+)(?=\.\w+$)/;
+  // Regular expression to match the public ID part (name and number or just number)
+  const regex = /\/([^\/]+?)(?=\.\w+$)/; // Match file name with or without the prefix before number
   const match = url.match(regex);
   return match ? match[1] : null;
 };
@@ -31,7 +31,7 @@ export const extractFolderPath = (url) => {
 /**
  * Ext: 
  * "/image/upload/v1732849150/food_delivery/food_images/1732849149521.jpg"
- * to "food_delivery/food_images//1732849149521"
+ * to "food_delivery/food_images/1732849149521"
  **/
 export const extractPublicId = (url) => {
   const regex = /\/([^/]+\/[^/]+)\/([^/]+\.[a-z]+)$/;
