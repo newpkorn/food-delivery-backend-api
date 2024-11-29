@@ -2,6 +2,7 @@ import express from 'express';
 import { loginUser, registerUser, getMe, updateUserInfo } from '../controllers/userController.js';
 import authMiddleware from '../middleware/auth.js';
 import multer from 'multer';
+
 import fs from "fs";
 
 const userRouter = express.Router();

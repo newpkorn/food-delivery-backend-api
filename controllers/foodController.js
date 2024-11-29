@@ -1,25 +1,37 @@
+import { uploadImage, deleteOriginalFileName, deleteImage } from "../config/cloudinary.js";
 import foodModel from "../models/foodModel.js";
-import fs from "fs";
+import { extractFolderPath, extractPublicId, extractPublicIdNumber } from "../utils/cloudinaryUtils.js";
 
+const foodFolder = 'food_images';
 // add food item
 const addFoodItem = async (req, res) => {
-  let image_filename = `${req.file.filename}`;
-  const { name, description, price, category } = req.body;
 
-  const food = new foodModel({
-    name,
-    description,
-    price,
-    category,
-    image: image_filename,
-  });
+    const { name, description, price, category } = req.body;
+    let imageUrl;
+
+    if (req.file) {
+      const uploadResult = await uploadImage(req.file.path, foodFolder);
+      imageUrl = uploadResult.secure_url;
+
+      if (uploadResult.original_filename) {
+        await deleteOriginalFileName(uploadResult.original_filename);
+      }
+    }
+
+    const food = new foodModel({
+        name,
+        description,
+        price,
+        category,
+        image: imageUrl || null,
+    });
 
   try {
     await food.save();
     res.status(201).json({success: true, message: "Food item added successfully" });
-  } catch (error) {
-    res.status(500).json({succuss: false, message: "Error adding food item" });
-  }
+    } catch (error) {
+      res.status(500).json({succuss: false, message: "Error adding food item" });
+    }
 }
 
 // all foods list
@@ -36,49 +48,66 @@ const getAllFoodItems = async (req, res) => {
 const updateFoodItem = async (req, res) => {
   const { id } = req.params;
   const { name, description, price, category } = req.body;
-  let image_filename = req.file ? req.file.filename : null;
-
-  // Step 1: Retrieve the old image path from the database
-  const FoodItem = await foodModel.findById(id);
-  const currentImagePath = FoodItem.image;
-  if (!FoodItem) {
-    return res.status(404).json({ success: false, message: "Food item not found" });
-  }
 
   try {
-    // Step 2: Delete the old image
-    if (image_filename) {
-      fs.unlink(`uploads/${currentImagePath}`, (err) => {
-        if (err) {
-          console.error("Error deleting old image:", err);
-        } else {
-          console.log("Old image deleted successfully: ", currentImagePath);
-        }
-      });
+    const FoodItem = await foodModel.findById(id);
+    if (!FoodItem) {
+      return res.status(404).json({ success: false, message: "Food item not found" });
     }
 
-    // Step 3: Update the food item in the database
-    const updatedFoodItem = await foodModel.findByIdAndUpdate(
-      id,
-      {
-        name,
-        description,
-        price,
-        category,
-        image: image_filename || currentImagePath,
-        updated_at: new Date(),
-      },
-      { new: true }
-    );
+    let updatedFields = {
+      name,
+      description,
+      price,
+      category,
+      updated_at: new Date(),
+    };
 
+    if (req.file && req.file.path) {
+      const currentImage = FoodItem.image;
+      // const publicId = currentImage.split('/').pop().split('.')[0];
+      const currentImgId = extractPublicIdNumber(currentImage);
+
+      // Delete old image if it exists
+      if (currentImgId) {
+        const deleteOldImageResult = await deleteImage(currentImgId, foodFolder);
+
+        const currentImgPath = extractPublicId(currentImage);
+
+        if (deleteOldImageResult?.deleted_counts[`${currentImgPath}`]?.original > 0) {
+          console.log(`Ole image ID: ${currentImgId} was deleted successfully.`);
+        } else {
+          console.error(`Failed to delete old image ID: ${currentImgId}.`);
+        }
+      }
+
+      // Upload new image
+      const uploadResult = await uploadImage(req.file.path, foodFolder);
+      updatedFields.image = uploadResult.secure_url;
+      console.log('New image URL uploaded:', uploadResult.secure_url);
+
+      if (uploadResult.original_filename) {
+        const deleteOriginalFileNameResult = await deleteOriginalFileName(uploadResult.original_filename);
+
+        if (deleteOriginalFileNameResult?.deleted_counts[`food_delivery/${uploadResult.original_filename}`]?.original > 0) {
+          console.log(`Image riginal file name ${uploadResult.original_filename} was deleted successfully.`);
+        } else {
+          console.error(`Failed to delete image riginal filename ${uploadResult.original_filename}.`);
+        }
+      }
+    } else {
+      updatedFields.image = FoodItem.image;
+    }
+
+    const updatedFoodItem = await foodModel.findByIdAndUpdate(id, updatedFields, { new: true });
     if (!updatedFoodItem) {
       return res.status(404).json({ success: false, message: "Food item not found" });
-    } else {
-      return res.status(200).json({ success: true, message: "Food item updated successfully" });
     }
 
+    return res.status(200).json({ success: true, message: "Food item updated successfully", foodItem: updatedFoodItem });
+
   } catch (error) {
-    console.log(error)
+    console.error("Error updating food item:", error);
     return res.status(500).json({ success: false, message: "Error updating food item" });
   }
 };
@@ -86,26 +115,44 @@ const updateFoodItem = async (req, res) => {
 // remove food item
 const removeFoodItem = async (req, res) => {
   const { id } = req.params;
+
   try {
     const food = await foodModel.findById(id);
     if (!food) {
       return res.status(404).json({ success: false, message: "Food item not found" });
     }
-    
-    const imagePath = `uploads/${food.image}`;
-    fs.unlink(imagePath, (err) => {
-      if (err) {
-        console.error("Error deleting image file:", err);
+
+    const foodImage = food.image;
+    if (foodImage) {
+      const currentImgId = extractPublicIdNumber(foodImage);
+      console.log('current image ID: ', currentImgId);
+
+      if (currentImgId) {
+        const deleteImageResult = await deleteImage(currentImgId, foodFolder);
+        console.log('deleteImageResult: ', deleteImageResult);
+
+        const currentImgPath = extractPublicId(foodImage);
+        console.log('currentImgPath: ', currentImgPath);
+
+        
+        if (deleteImageResult?.deleted_counts?.[`${currentImgPath}`]?.original > 0) {
+          console.log(`Image ${currentImgId} was deleted successfully.`);
+        } else {
+          console.error(`Failed to delete image ${currentImgId}.`);
+        }
       }
-    });
-    
+    }
+
     await foodModel.findByIdAndDelete(id);
-    
     res.status(200).json({ success: true, message: "Food item removed successfully" });
+
   } catch (error) {
+    console.error("Error removing food item:", error.message); // Debugging error
     res.status(500).json({ success: false, message: "Error removing food item" });
   }
-}
+};
+
+
 
 
 
