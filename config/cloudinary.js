@@ -27,26 +27,6 @@ const storage = new CloudinaryStorage({
 
 export const upload = multer({ storage: storage });
 
-// export const uploadImage = async (file, folder, fileName) => {
-//     try {
-//         const uploadResult = await cloudinary.uploader.upload(file, {
-//             folder: `${mainFolder}/${folder}`,
-//             public_id: `${fileName-Date.now() || Date.now()}`,
-//             overwrite: true,
-//             transformation: [
-//                 { width: 500, height: 500, crop: 'limit' },
-//                 { quality: 'auto' },
-//                 { fetch_format: 'auto' }
-//             ]
-//         });
-
-//         return uploadResult;
-//     } catch (error) {
-//         console.error('Error uploading to Cloudinary:', error);
-//         throw error;
-//     }
-// };
-
 export const uploadImage = async (file, folder, fileName) => {
     try {
         const finalFileName = fileName || Date.now().toString();

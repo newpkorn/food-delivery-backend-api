@@ -101,7 +101,7 @@ const updateUserInfo = async (req, res) => {
 
           const deleteResult = await deleteImage(originalFileName, userUploadFolder);
 
-          if (!deleteResult || deleteResult?.deleted_counts?.[originalFileName]?.original === 0) {
+          if (!deleteResult || deleteResult?.deleted_counts?.[`${originalFileName}`]?.original === 0) {
             console.error(`Failed to delete image in cloud: ${originalFileName}`);
           }
 
@@ -153,7 +153,6 @@ const updateUserInfo = async (req, res) => {
 
       if (currentImgId) {
         const deleteImageResult = await deleteImage(currentImgId, userUploadFolder);
-
         if (!deleteImageResult || deleteImageResult?.deleted_counts?.[extractPublicId(currentImage) + '']?.original === 0) {
           console.error(`Failed to delete image: ${currentImgId}`);
         }

@@ -90,7 +90,7 @@ const updateFoodItem = async (req, res) => {
         const deleteOriginalFileNameResult = await deleteOriginalFileName(uploadResult.original_filename);
 
         if (deleteOriginalFileNameResult?.deleted_counts[`food_delivery/${uploadResult.original_filename}`]?.original > 0) {
-          console.log(`Image riginal file name ${uploadResult.original_filename} was deleted successfully.`);
+          console.log(`Image original file name ${uploadResult.original_filename} was deleted successfully.`);
         } else {
           console.error(`Failed to delete image riginal filename ${uploadResult.original_filename}.`);
         }
@@ -125,15 +125,11 @@ const removeFoodItem = async (req, res) => {
     const foodImage = food.image;
     if (foodImage) {
       const currentImgId = extractPublicIdNumber(foodImage);
-      console.log('current image ID: ', currentImgId);
 
       if (currentImgId) {
         const deleteImageResult = await deleteImage(currentImgId, foodUploadFolder);
-        console.log('deleteImageResult: ', deleteImageResult);
 
         const currentImgPath = extractPublicId(foodImage);
-        console.log('currentImgPath: ', currentImgPath);
-
         
         if (deleteImageResult?.deleted_counts?.[`${currentImgPath}`]?.original > 0) {
           console.log(`Image ${currentImgId} was deleted successfully.`);
