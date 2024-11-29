@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import userModel from "../models/userModel.js";
-import fs from "fs";
 import { extractPublicId, extractPublicIdNumber } from "../utils/cloudinaryUtils.js";
 import { deleteImage, deleteOriginalFileName, uploadImage } from "../config/cloudinary.js";
 
@@ -21,7 +20,7 @@ const loginUser = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid password" });
     }
-    const token = createToken(user._id, user._id);
+    const token = createToken(user._id);
     res.status(200).json({ success: true, data: user, token });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
