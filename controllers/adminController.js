@@ -50,8 +50,16 @@ const createAdminUser = async (req, res) => {
   }
 };
 
+const getMe = async (req, res) => {
+  const admin = await adminModel.findById(req.body.userId);
+  if (!admin) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+  res.status(200).json({ success: true, data: admin });
+};
+
 const createToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30m' });
 };
 
-export { loginAdmin, createAdminUser }
+export { loginAdmin, createAdminUser, getMe }
