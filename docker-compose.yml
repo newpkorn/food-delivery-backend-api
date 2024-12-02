@@ -21,7 +21,7 @@ services:
           memory: 512M
     labels:
     - "com.docker.logging.driver=loki"
-    - "com.docker.logging.loki.url=http://loki:3100/loki/api/v1/push"
+    - "com.docker.logging.loki.url=http://172.21.0.3:3100/loki/api/v1/push"
     - "com.docker.logging.loki-retries=5"
     - "com.docker.logging.loki-batch-size=400"
     - "container_name=tomato-api"

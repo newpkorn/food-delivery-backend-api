@@ -1,32 +1,61 @@
-.git/
+# Node.js dependencies
 node_modules/
-config/development/
-*.log
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Environment variables
 .env
+.env.*
 
-Dockerfile
-docker-compose.yml
-docker-compose.override.yml
+# Logs
+logs/
+*.log
+debug.log
 
+# Build output
+dist/
+build/
+.cache/
+
+# Temporary files
+tmp/
+*.tmp
+*.swp
+
+# Git and version control
+.git/
+.gitignore
+.gitattributes
+
+# Docker files
+Dockerfile*
+docker-compose*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 .vscode/
 .idea/
+*.iml
 .settings/
-.classpath
-.project
-.factorypath
 
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-debug.log
-yarn.lock
+# Test files
+coverage/
+*.spec.js
+*.test.js
+__tests__/
+jest/
 
+# Editor settings
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
+
+# Misc
+*.bak
 *.sw?
+*.pid
