@@ -59,7 +59,7 @@ const getMe = async (req, res) => {
 };
 
 const createToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1m' });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
 export { loginAdmin, createAdminUser, getMe }
