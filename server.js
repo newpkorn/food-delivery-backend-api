@@ -20,7 +20,7 @@ const io = new Server(server, {
   cors: {
     origin: [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL],
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
-    credentials: true // ต้องมี credentials: true
+    credentials: true
   }
 });
 
