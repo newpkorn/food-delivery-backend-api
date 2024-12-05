@@ -35,6 +35,14 @@ app.use(cors({
   methods: ["GET", "POST", "PATCH", "PUT", "DELETE"]
 }));
 
+app.use(cors({
+  origin: "https://aroidee-admin.netlify.app",
+  credentials: true,
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE"]
+}));
+
+app.options('*', cors());
+
 // db connection
 connectDB();
 
