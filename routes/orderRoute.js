@@ -10,7 +10,7 @@ orderRouter.post('/userorders', authMiddleware, userOrders);
 
 orderRouter.patch('/status', updateOrderStatus)
 
-orderRouter.get('/list', listOrders);
+orderRouter.get('/list', authMiddleware, listOrders);
 orderRouter.get('/trackorder/:orderId', authMiddleware, trackOrder);
 
 export default orderRouter;
