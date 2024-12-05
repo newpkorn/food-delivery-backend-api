@@ -20,14 +20,24 @@ const io = new Server(server, {
   cors: {
     origin: [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL],
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
-    credentials: true
+    credentials: true // ต้องมี credentials: true
   }
 });
 
 // middlewares
 app.use(express.json());
+app.use((req, res, next) => {
+  const allowedOrigins = [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PATCH, PUT, DELETE");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  next();
+});
 
-// CORS middleware
 const allowedOrigins = [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL];
 app.use(cors({
   origin: allowedOrigins,
@@ -35,12 +45,25 @@ app.use(cors({
   methods: ["GET", "POST", "PATCH", "PUT", "DELETE"]
 }));
 
+
+app.options('*', (req, res) => {
+  const allowedOrigins = [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PATCH, PUT, DELETE");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  }
+  res.sendStatus(200); // ส่งสถานะ 200 OK
+});
+
+
 // db connection
 connectDB();
 
 // api endpoints
-app.use('/images', express.static('uploads'));
 app.use('/api/food', foodRoute);
+app.use('/images', express.static('uploads'));
 app.use('/api/user', userRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
