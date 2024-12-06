@@ -20,31 +20,34 @@ const io = new Server(server, {
   cors: {
     origin: [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL],
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
-    credentials: true,
+    credentials: true
   }
 });
 
 // middlewares
 app.use(express.json());
-
-// CORS configuration
-const allowedOrigins = [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL];
-app.use(cors({
-  origin: (origin, callback) => {
-    if (allowedOrigins.includes(origin) || !origin) { // Allow no origin for non-browser requests
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
-  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
-  credentials: true, // Allow cookies and credentials
-}));
+app.use((req, res, next) => {
+  const allowedOrigins = [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PATCH, PUT, DELETE");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  next();
+});
 
 app.options('*', (req, res) => {
-  res.sendStatus(200); // Preflight response
+  const allowedOrigins = [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PATCH, PUT, DELETE");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  res.sendStatus(200);
 });
+
 
 // db connection
 connectDB();
@@ -84,4 +87,4 @@ io.on('connection', (socket) => {
 
 server.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`);
-});
+})
