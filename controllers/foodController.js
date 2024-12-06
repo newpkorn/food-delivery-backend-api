@@ -118,7 +118,7 @@ const removeFoodItem = async (req, res) => {
 
   try {
     const food = await foodModel.findById(id);
-    const foodTest = await foodModel.findById("67535cd6cb8b5e77851a8b1d");
+    const foodTest = await foodModel.findById("67535f1ede14e6bcb4bd486e");
     console.log("foodTest: ", foodTest);
     if (!food) {
       return res.status(404).json({ success: false, message: "Food item not found" });
