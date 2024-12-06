@@ -48,7 +48,6 @@ app.options('*', (req, res) => {
   res.sendStatus(200);
 });
 
-
 // db connection
 connectDB();
 
@@ -87,4 +86,4 @@ io.on('connection', (socket) => {
 
 server.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`);
-})
+});

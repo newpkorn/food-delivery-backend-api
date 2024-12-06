@@ -118,6 +118,8 @@ const removeFoodItem = async (req, res) => {
 
   try {
     const food = await foodModel.findById(id);
+    const foodTest = await foodModel.findById("67520ddaf826c37b4e934f60");
+    console.log("foodTest: ", foodTest);
     if (!food) {
       return res.status(404).json({ success: false, message: "Food item not found" });
     }
@@ -147,9 +149,6 @@ const removeFoodItem = async (req, res) => {
     res.status(500).json({ success: false, message: "Error removing food item" });
   }
 };
-
-
-
 
 
 export { addFoodItem, getAllFoodItems, removeFoodItem, updateFoodItem };
