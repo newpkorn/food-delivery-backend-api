@@ -18,7 +18,7 @@ const server = http.createServer(app);
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL],  // ใช้จาก environment variables
+    origin: [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL],
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
     credentials: true,
   }
@@ -50,8 +50,8 @@ app.options('*', (req, res) => {
 connectDB();
 
 // api endpoints
-app.use('/api/food', foodRoute);
 app.use('/images', express.static('uploads'));
+app.use('/api/food', foodRoute);
 app.use('/api/user', userRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
