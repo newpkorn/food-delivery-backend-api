@@ -18,7 +18,7 @@ const server = http.createServer(app);
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: [process.env.FRONTEND_URL, process.env.FRONTEND_ADMIN_URL],
+    origin: [process.env.FRONTEND_URL, process.env.FREND_ADMIN_URL],
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
     credentials: true,
   },
@@ -26,35 +26,20 @@ const io = new Server(server, {
 
 // middlewares
 app.use(express.json());
+
+// CORS middleware
 app.use((req, res, next) => {
   const allowedOrigins = [
     process.env.FRONTEND_URL,
     process.env.FRONTEND_ADMIN_URL,
   ];
   const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  }
-  res.header(
-    'Access-Control-Allow-Methods',
-    'GET, POST, OPTIONS, PATCH, PUT, DELETE'
-  );
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-  );
-  next();
-});
 
-app.options('*', (req, res) => {
-  const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    process.env.FRONTEND_ADMIN_URL,
-  ];
-  const origin = req.headers.origin;
+  // Check if the origin is in the allowedOrigins array
   if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Origin', origin); // Allow requests from the specified origin
   }
+
   res.header(
     'Access-Control-Allow-Methods',
     'GET, POST, OPTIONS, PATCH, PUT, DELETE'
@@ -63,7 +48,14 @@ app.options('*', (req, res) => {
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept, Authorization'
   );
-  res.sendStatus(200);
+  res.header('Access-Control-Allow-Credentials', 'true'); // Allow credentials (cookies, authorization headers)
+
+  // For preflight requests (OPTIONS)
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
+  next();
 });
 
 // db connection
@@ -77,11 +69,13 @@ app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
 app.use('/api/admin', adminRouter);
 
+// Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
 });
 
+// Socket.IO event handling
 let connectionCount = 0;
 
 io.on('connection', (socket) => {
@@ -102,6 +96,7 @@ io.on('connection', (socket) => {
   });
 });
 
+// Start server
 server.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`);
 });
