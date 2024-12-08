@@ -62,6 +62,9 @@ app.use((req, res, next) => {
 connectDB();
 
 // api endpoints
+app.get('/', (req, res) => {
+  res.send('Server is running');
+});
 app.use('/images', express.static('uploads'));
 app.use('/api/food', foodRoute);
 app.use('/api/user', userRouter);
