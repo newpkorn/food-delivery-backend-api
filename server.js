@@ -15,6 +15,14 @@ const app = express();
 const PORT = process.env.PORT || 5181;
 const server = http.createServer(app);
 
+app.use(
+  cors({
+    origin: [process.env.FRONTEND_URL, process.env.FREND_ADMIN_URL],
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
