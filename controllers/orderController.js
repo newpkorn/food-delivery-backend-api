@@ -1,6 +1,6 @@
-import orderModel from "../models/orderModel.js";
-import userModel from "../models/userModel.js";
-import Stripe from "stripe";
+import orderModel from '../models/orderModel.js';
+import userModel from '../models/userModel.js';
+import Stripe from 'stripe';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -54,11 +54,11 @@ const placeOrder = async (req, res) => {
     console.error('Order placement error:', error);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
-}
+};
 
 const verifyOrder = async (req, res) => {
   const { success, orderId } = req.body;
-  console.log("Received:", { success, orderId });
+  console.log('Received:', { success, orderId });
   try {
     if (success === 'true') {
       await orderModel.findByIdAndUpdate(orderId, { payment: true });
@@ -75,13 +75,13 @@ const verifyOrder = async (req, res) => {
 
 const userOrders = async (req, res) => {
   try {
-    const orders = await orderModel.find({ userId: req.body.userId });
+    const orders = await orderModel.find({ userId: req.user.id });
     res.status(200).json({ success: true, data: orders });
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
-}
+};
 
 // Listening orders for admin panel
 const listOrders = async (req, res) => {
@@ -92,33 +92,45 @@ const listOrders = async (req, res) => {
     console.log(error);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
-}
+};
 
 // Tracking order status
 const trackOrder = async (req, res) => {
   const { orderId } = req.params;
   try {
-      const order = await orderModel.findById(orderId);
-      if (!order) {
-          return res.status(404).json({ success: false, message: 'Order not found' });
-      }
-      res.status(200).json({ success: true, data: order });
-  } catch (error) {
-      console.log(error);
-      res.status(500).json({ success: false, message: 'Internal Server Error' });
-  }
-};
-
-
-// api for updating order status
-const updateOrderStatus = async (req, res) => {
-  try {
-    await orderModel.findByIdAndUpdate(req.body.orderId, { status: req.body.status });
-    res.status(200).json({ success: true, message: 'Order status updated successfully' });
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'Order not found' });
+    }
+    res.status(200).json({ success: true, data: order });
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
-}
+};
 
-export { placeOrder, verifyOrder, userOrders, listOrders, updateOrderStatus, trackOrder };
+// api for updating order status
+const updateOrderStatus = async (req, res) => {
+  try {
+    await orderModel.findByIdAndUpdate(req.body.orderId, {
+      status: req.body.status,
+    });
+    res
+      .status(200)
+      .json({ success: true, message: 'Order status updated successfully' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+export {
+  placeOrder,
+  verifyOrder,
+  userOrders,
+  listOrders,
+  updateOrderStatus,
+  trackOrder,
+};

@@ -1,6 +1,10 @@
 import express from 'express';
-import { createAdminUser, getMe, loginAdmin } from '../controllers/adminController.js';
-import authMiddleware from '../middleware/auth.js';
+import {
+  createAdminUser,
+  getMe,
+  loginAdmin,
+} from '../controllers/adminController.js';
+import { authMiddleware } from '../middleware/auth.js';
 
 const adminRouter = express.Router();
 
