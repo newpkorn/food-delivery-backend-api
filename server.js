@@ -15,64 +15,33 @@ const app = express();
 const PORT = process.env.PORT || 5181;
 const server = http.createServer(app);
 
-app.use(
-  cors({
-    origin: [process.env.FRONTEND_URL, process.env.FREND_ADMIN_URL],
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+// CORS setup
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_ADMIN_URL,
+];
 
-// Socket.IO setup
-const io = new Server(server, {
-  cors: {
-    origin: [process.env.FRONTEND_URL, process.env.FREND_ADMIN_URL],
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
-    credentials: true,
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
   },
-});
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
+  credentials: true,
+};
+
+app.use(cors(corsOptions)); // Apply CORS middleware globally
 
 // middlewares
 app.use(express.json());
-
-// CORS middleware
-app.use((req, res, next) => {
-  const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    process.env.FRONTEND_ADMIN_URL,
-  ];
-  const origin = req.headers.origin;
-
-  // Check if the origin is in the allowedOrigins array
-  if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin); // Allow requests from the specified origin
-  }
-
-  res.header(
-    'Access-Control-Allow-Methods',
-    'GET, POST, OPTIONS, PATCH, PUT, DELETE'
-  );
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-  );
-  res.header('Access-Control-Allow-Credentials', 'true'); // Allow credentials (cookies, authorization headers)
-
-  // For preflight requests (OPTIONS)
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-
-  next();
-});
 
 // db connection
 connectDB();
 
 // api endpoints
-app.get('/', (req, res) => {
-  res.send('Server is running');
-});
 app.use('/images', express.static('uploads'));
 app.use('/api/food', foodRoute);
 app.use('/api/user', userRouter);
@@ -80,13 +49,15 @@ app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
 app.use('/api/admin', adminRouter);
 
-// Global error handler
+// error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
 });
 
-// Socket.IO event handling
+// Socket.IO setup
+const io = new Server(server, corsOptions);
+
 let connectionCount = 0;
 
 io.on('connection', (socket) => {
@@ -107,7 +78,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// Start server
 server.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`);
 });

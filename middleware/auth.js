@@ -10,10 +10,10 @@ const authMiddleware = async (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    console.error('JWT Error:', error);
-    return res
-      .status(401)
-      .json({ success: false, message: 'Token is not valid' });
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ success: false, message: 'Token expired' });
+    }
+    return res.status(401).json({ success: false, message: 'Invalid token' });
   }
 };
 

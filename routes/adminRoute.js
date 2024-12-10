@@ -11,6 +11,6 @@ const adminRouter = express.Router();
 adminRouter.post('/login', loginAdmin);
 adminRouter.post('/create', createAdminUser);
 
-adminRouter.get('/me', authMiddleware, getMe);
+adminRouter.get('/getMe', authMiddleware, getMe);
 
 export default adminRouter;

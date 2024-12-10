@@ -7,7 +7,9 @@ dotenv.config();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const placeOrder = async (req, res) => {
-  const { userId, items, amount, address } = req.body;
+  console.log('req.body: ', req.body);
+  const { items, amount, address } = req.body;
+  const userId = req.user.id;
   const frontend_url = process.env.FRONTEND_URL;
 
   try {
