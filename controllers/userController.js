@@ -209,20 +209,23 @@ const updateUserInfo = async (req, res) => {
 
     if (image_filename) {
       const currentImage = user.image;
-      const currentImgId = extractPublicIdNumber(currentImage);
+      if (currentImage && typeof currentImage === 'string') {
+        const currentImgId = extractPublicIdNumber(currentImage);
+        console.log('currentImgId', currentImgId);
 
-      if (currentImgId) {
-        const deleteImageResult = await deleteImage(
-          currentImgId,
-          userUploadFolder
-        );
-        if (
-          !deleteImageResult ||
-          deleteImageResult?.deleted_counts?.[
-            extractPublicId(currentImage) + ''
-          ]?.original === 0
-        ) {
-          console.error(`Failed to delete image: ${currentImgId}`);
+        if (currentImgId) {
+          const deleteImageResult = await deleteImage(
+            currentImgId,
+            userUploadFolder
+          );
+          if (
+            !deleteImageResult ||
+            deleteImageResult?.deleted_counts?.[
+              extractPublicId(currentImage) + ''
+            ]?.original === 0
+          ) {
+            console.error(`Failed to delete image: ${currentImgId}`);
+          }
         }
       }
 
