@@ -24,7 +24,8 @@ const addToCart = async (req, res) => {
 
 // remove items from user cart
 const removeFromCart = async (req, res) => {
-  const { userId, itemId } = req.body;
+  const { itemId } = req.body;
+  const userId = req.user.id;
   try {
     let userData = await userModel.findById(userId);
     let cartData = userData.cartData || {};
