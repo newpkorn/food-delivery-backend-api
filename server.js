@@ -10,27 +10,30 @@ import cartRouter from './routes/cartRoute.js';
 import orderRouter from './routes/orderRoute.js';
 import adminRouter from './routes/adminRoute.js';
 
-dotenv.config();
+if (process.env.NODE_ENV !== 'production') {
+    dotenv.config();
+}
+
 const app = express();
 const PORT = process.env.PORT || 5181;
 const server = http.createServer(app);
 
 // CORS setup
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  process.env.FRONTEND_ADMIN_URL,
+    process.env.FRONTEND_URL,
+    process.env.FRONTEND_ADMIN_URL,
 ];
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (allowedOrigins.includes(origin) || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
-  credentials: true,
+    origin: (origin, callback) => {
+        if (allowedOrigins.includes(origin) || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
+    credentials: true,
 };
 
 app.use(cors(corsOptions)); // Apply CORS middleware globally
@@ -51,8 +54,8 @@ app.use('/api/admin', adminRouter);
 
 // error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
 });
 
 // Socket.IO setup
@@ -61,23 +64,23 @@ const io = new Server(server, corsOptions);
 let connectionCount = 0;
 
 io.on('connection', (socket) => {
-  connectionCount++;
-  if (connectionCount === 1) {
-    console.log('User connected:', socket.id);
-  }
-
-  socket.on('newOrder', (data) => {
-    io.sockets.emit('orderUpdated', data);
-  });
-
-  socket.on('disconnect', () => {
-    connectionCount--;
-    if (connectionCount === 0) {
-      console.log('All users disconnected');
+    connectionCount++;
+    if (connectionCount === 1) {
+        console.log('User connected:', socket.id);
     }
-  });
+
+    socket.on('newOrder', (data) => {
+        io.sockets.emit('orderUpdated', data);
+    });
+
+    socket.on('disconnect', () => {
+        connectionCount--;
+        if (connectionCount === 0) {
+            console.log('All users disconnected');
+        }
+    });
 });
 
 server.listen(PORT, () => {
-  console.log(`Server is running on port: ${PORT}`);
+    console.log(`Server is running on port: ${PORT}`);
 });

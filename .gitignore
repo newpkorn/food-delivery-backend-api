@@ -10,6 +10,7 @@ package-lock.json
 
 # Environment variables
 .env
+.env.local
 
 # Logs
 logs/
@@ -58,3 +59,4 @@ jest/
 *.bak
 *.sw?
 *.pid
+.vercel
