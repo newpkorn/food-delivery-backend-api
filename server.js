@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { Server } from 'socket.io';
 import http from 'http';
 import connectDB from './config/db.js';
 import foodRoute from './routes/foodRoute.js';
@@ -9,20 +8,29 @@ import userRouter from './routes/userRoute.js';
 import cartRouter from './routes/cartRoute.js';
 import orderRouter from './routes/orderRoute.js';
 import adminRouter from './routes/adminRoute.js';
+import Pusher from 'pusher';
 
 if (process.env.NODE_ENV !== 'production') {
     dotenv.config();
 }
 
+const pusher = new Pusher({
+    appId: process.env.PUSHER_APP_ID,
+    key: process.env.PUSHER_KEY,
+    secret: process.env.PUSHER_SECRET,
+    cluster: process.env.PUSHER_CLUSTER,
+    useTLS: true,
+});
+
 const app = express();
 const PORT = process.env.PORT || 5181;
-const server = http.createServer(app);
 
 // CORS setup
 const allowedOrigins = [
     process.env.FRONTEND_URL,
     process.env.FRONTEND_ADMIN_URL,
-    'food-delivery-backend-api.vercel.app',
+    'https://food-delivery-backend-api.vercel.app',
+    'http://localhost:3000',
 ];
 
 const corsOptions = {
@@ -50,41 +58,35 @@ app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
 app.use('/api/admin', adminRouter);
 
+// Pusher endpoint
+app.post('/api/orders/update', (req, res) => {
+    try {
+        const { orderId, status } = req.body;
+
+        pusher.trigger('orders', 'order-updated', {
+            orderId,
+            status,
+            updatedAt: new Date(),
+        });
+
+        res.status(200).json({ success: true });
+    } catch (error) {
+        console.error('Error updating order:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error',
+        });
+    }
+});
+
 // error handler
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('Something broke!');
 });
 
-// Socket.IO setup
-const io = new Server(server, {
-    ...corsOptions,
-    transports: ['websocket', 'polling'],
-    pingInterval: 25000,
-    pingTimeout: 60000,
-});
-
-let connectionCount = 0;
-
-io.on('connection', (socket) => {
-    connectionCount++;
-    if (connectionCount === 1) {
-        console.log('User connected:', socket.id);
-    }
-
-    socket.on('newOrder', (data) => {
-        io.sockets.emit('orderUpdated', data);
-    });
-
-    socket.on('disconnect', () => {
-        connectionCount--;
-        if (connectionCount === 0) {
-            console.log('All users disconnected');
-        }
-    });
-});
-
-const vercelServer = server.listen(PORT, () => {
+// start server
+const server = app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);
 });
 
