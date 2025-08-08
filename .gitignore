@@ -60,3 +60,4 @@ jest/
 *.sw?
 *.pid
 .vercel
+.env*.local

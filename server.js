@@ -22,6 +22,7 @@ const server = http.createServer(app);
 const allowedOrigins = [
     process.env.FRONTEND_URL,
     process.env.FRONTEND_ADMIN_URL,
+    'food-delivery-backend-api.vercel.app',
 ];
 
 const corsOptions = {
@@ -36,16 +37,13 @@ const corsOptions = {
     credentials: true,
 };
 
-app.use(cors(corsOptions)); // Apply CORS middleware globally
-
-// middlewares
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // db connection
 connectDB();
 
 // api endpoints
-app.use('/images', express.static('uploads'));
 app.use('/api/food', foodRoute);
 app.use('/api/user', userRouter);
 app.use('/api/cart', cartRouter);
@@ -59,7 +57,12 @@ app.use((err, req, res, next) => {
 });
 
 // Socket.IO setup
-const io = new Server(server, corsOptions);
+const io = new Server(server, {
+    ...corsOptions,
+    transports: ['websocket', 'polling'],
+    pingInterval: 25000,
+    pingTimeout: 60000,
+});
 
 let connectionCount = 0;
 
@@ -81,6 +84,8 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(PORT, () => {
+const vercelServer = server.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);
 });
+
+export default app;
