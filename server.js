@@ -30,6 +30,7 @@ const allowedOrigins = [
     process.env.FRONTEND_URL,
     process.env.FRONTEND_ADMIN_URL,
     process.env.API_ENDPOINT,
+    'http://localhost:5173',
 ];
 
 const corsOptions = {
