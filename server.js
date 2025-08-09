@@ -29,8 +29,7 @@ const PORT = process.env.PORT || 5181;
 const allowedOrigins = [
     process.env.FRONTEND_URL,
     process.env.FRONTEND_ADMIN_URL,
-    'https://food-delivery-backend-api.vercel.app',
-    'http://localhost:3000',
+    process.env.API_ENDPOINT,
 ];
 
 const corsOptions = {
