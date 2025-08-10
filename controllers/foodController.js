@@ -47,29 +47,14 @@ const addFoodItem = async (req, res) => {
 };
 
 // all foods list
-// ฟังก์ชันสำหรับดึงรายการอาหารทั้งหมด
-export const getAllFoodItems = async (req, res) => {
+const getAllFoodItems = async (req, res) => {
     try {
-        // เพิ่มการตรวจสอบการเข้าถึงสำหรับ Admin
-        if (req.user && req.user.isAdmin) {
-            const foods = await Food.find({});
-            return res.status(200).json({
-                success: true,
-                data: foods,
-            });
-        } else {
-            // สำหรับผู้ใช้ทั่วไป ให้ดึงเฉพาะอาหารที่แสดง
-            const foods = await Food.find({ isAvailable: true });
-            return res.status(200).json({
-                success: true,
-                data: foods,
-            });
-        }
+        const foods = await foodModel.find();
+        res.status(200).json({ success: true, data: foods });
     } catch (error) {
-        console.error('Error fetching food items:', error);
-        return res.status(500).json({
+        res.status(500).json({
             success: false,
-            message: 'Internal Server Error',
+            message: 'Error fetching food items',
         });
     }
 };

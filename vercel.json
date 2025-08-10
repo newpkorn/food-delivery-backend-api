@@ -2,17 +2,14 @@
     "version": 2,
     "builds": [
         {
-            "src": "server.js",
-            "use": "@vercel/node",
-            "config": {
-                "includeFiles": ["uploads/**"]
-            }
+            "src": "api/server.js",
+            "use": "@vercel/node"
         }
     ],
     "routes": [
         {
             "src": "/socket.io/(.*)",
-            "dest": "server.js",
+            "dest": "api/server.js",
             "headers": {
                 "Connection": "Upgrade",
                 "Upgrade": "websocket"
@@ -20,7 +17,7 @@
         },
         {
             "src": "/(.*)",
-            "dest": "server.js"
+            "dest": "api/server.js"
         }
     ]
 }
