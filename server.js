@@ -51,8 +51,11 @@ app.use('/api/admin', adminRouter);
 
 // error handler
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
+    console.error('Error stack:', err.stack);
+    res.status(500).json({
+        error: err.message || 'Something broke!',
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    });
 });
 
 // Socket.IO setup
@@ -79,5 +82,5 @@ io.on('connection', (socket) => {
 });
 
 server.listen(PORT, () => {
-    console.log(`Server is running on port: ${PORT}`);
+    console.log(`Server is running on port: http://localhost:${PORT}`);
 });
